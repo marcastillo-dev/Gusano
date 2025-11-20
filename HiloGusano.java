@@ -36,36 +36,23 @@ public class HiloGusano extends Thread {
     
     public void run() {
         int i = 0;
-        int vida = 10;
+        int j = 0;
+        int vida = 100;
         while(vida != 0) {
             try{
+
                 synchronized(jardin) {
-                    caminaColumna(i);
-                    i++;
+                    for(i = 0; i < filas; i++) {
+                        for(j = 0; j < columnas; j++){
+                            caminaRenglon(j);
+                            sleep(1000);
+                        }
+                        caminaColumna(i);
+                        sleep(500);
+                    }
                 }
-                sleep(500);
+
                 
-                synchronized(jardin) {
-                    comerColumna(i, 2);
-                    sleep(200);
-                    i++;
-                }
-                sleep(800);
-                
-                synchronized(jardin) {
-                    caminaRenglon(i);
-                    i++;
-                }
-                sleep(500);
-                
-                synchronized(jardin) {
-                    comerColumna(i, 2);
-                    sleep(200);
-                    i++;
-                }
-                sleep(800);
-                
-                vida--;
             }
             catch(InterruptedException e) {
                 System.out.println("Interrupción");
