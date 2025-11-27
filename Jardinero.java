@@ -1,54 +1,55 @@
 public class Jardinero extends Thread {
-   
+
     private char[][] tierra;
     private int filas;
     private int columnas;
- 
+    protected boolean limpiar = false;
+    private boolean terminar = false;
+    private boolean fin = false;
+
     public Jardinero(char[][] m) {
-        this.tierra = m;
-        filas = tierra.length;
-        columnas = tierra[0].length;
+        actualizarMapa(m);
     }
- 
-    public void caminaRenglon(int r) {
-        for(int x = 0; x < columnas; x++) {
-            tierra[r][x] = 'T';
-        }
+
+    public synchronized void actualizarMapa(char[][] nuevo) {
+        this.tierra = nuevo;
+        filas = nuevo.length;
+        columnas = nuevo[0].length;
     }
-   
-    public void caminaColumna(int c) {
-        for(int x = 0; x < filas; x++) {
-            tierra[x][c] = 'T';
-        }
+
+    public synchronized void removerTierra() {
+        limpiar = true;
+        
     }
- 
-    public boolean removerTierra() {
-        return true;
+
+    public boolean getTerminar() {
+        return terminar;
     }
- 
+    
+    public void terminar() {
+        terminar = true;
+    }
+
     public void run() {
-        int i = 0;
-        int j = 0;
- 
-        try{
-            synchronized(tierra) {
-                for(i = 0; i < filas; i++) {
-                    for(j = 0; j < columnas; j++){
-                        caminaRenglon(j);
-                        sleep(1000);
+        while(!fin) {
+            if(limpiar) {
+                for(int r = 0; r < filas; r++) {
+                    for(int c = 0; c < columnas; c++) {
+                        tierra[r][c] = 'T';
                     }
-                    caminaColumna(i);
-                    sleep(500);
                 }
-            }    
-            removerTierra();  
-        }
-        catch(InterruptedException e) {
-            System.out.println("Interrupción");
-        }
-        catch(ArrayIndexOutOfBoundsException a) {
-            i = 0;
+                limpiar = false;
+                terminar = true;
+            }
+            try {
+                sleep(1500);
+            } 
+            catch (InterruptedException e) {
+                System.out.println("Interrupción Jardinero");
+            }
+            catch (IllegalMonitorStateException e) {
+                System.out.println("Interrupción");
+            }
         }
     }
- 
 }

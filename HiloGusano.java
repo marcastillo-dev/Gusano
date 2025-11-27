@@ -1,66 +1,77 @@
 public class HiloGusano extends Thread {
-    
+
     private char[][] jardin;
     private int filas;
     private int columnas;
-    
+    private int velocidad = 1000;
+    private boolean terminar = false;
+    private boolean fin = false;
+
     public HiloGusano(char[][] j) {
-        this.jardin = j;
-        filas = jardin.length;
-        columnas = jardin[0].length;
+        actualizarMapa(j);
     }
-    
+
+    public synchronized void actualizarMapa(char[][] nuevo) {
+        this.jardin = nuevo;
+        filas = nuevo.length;
+        columnas = nuevo[0].length;
+    }
+
     public void caminaRenglon(int r) {
         for(int x = 0; x < columnas; x++) {
-            jardin[r][x] = 'W'; 
+            jardin[r][x] = 'W';
         }
     }
-    
+
     public void caminaColumna(int c) {
         for(int x = 0; x < filas; x++) {
-            jardin[x][c] = 'W'; 
+            jardin[x][c] = 'W';
         }
     }
-    
-    public void comerColumna(int c, int comer) {
-        for(int x = 0; x < comer; x++) {
-            jardin[x][c] = 'C'; 
-        }
+
+    public void setVelocidad(int v) {
+        velocidad = v;
+    }
+
+    public boolean getTerminar() {
+        return terminar;
     }
     
-    public void comerRenglon(int r, int comer) {
-        for(int x = 0; x < comer; x++) {
-            jardin[r][x] = 'C'; 
+    public void finalizar() {
+        fin = true;
+    }
+
+    public void despertar() {
+        synchronized(jardin) {
+            jardin.notify();
         }
     }
-    
+
     public void run() {
-        int i = 0;
-        int j = 0;
-        int vida = 100;
-        while(vida != 0) {
-            try{
-
+        while(!fin) {
+            try {
                 synchronized(jardin) {
-                    for(i = 0; i < filas; i++) {
-                        for(j = 0; j < columnas; j++){
-                            caminaRenglon(j);
-                            sleep(1000);
-                        }
-                        caminaColumna(i);
-                        sleep(500);
+    
+                    for (int r = 0; r < filas; r++) {
+                        caminaRenglon(r);
+                        sleep(velocidad);
                     }
+    
+                    for (int c = 0; c < columnas; c++) {
+                        caminaColumna(c);
+                        sleep(velocidad);
+                    }
+    
+                    terminar = true;
+                    jardin.wait(); // espera al jardinero
                 }
-
-                
-            }
-            catch(InterruptedException e) {
+            } 
+            catch (InterruptedException a) {
                 System.out.println("Interrupción");
             }
-            catch(ArrayIndexOutOfBoundsException a) {
-                i = 0;
+            catch (IllegalMonitorStateException e) {
+                System.out.println("Interrupción");
             }
         }
     }
-    
 }
