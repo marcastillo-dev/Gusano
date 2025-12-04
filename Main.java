@@ -1,4 +1,3 @@
-//UVM PC NOV,2025
 import java.util.Scanner;
 
 public class Main {
@@ -27,13 +26,19 @@ public class Main {
             System.out.println("\n======= MENÚ ========");
             System.out.println("1. Tamaño de terreno");
             System.out.println("2. Velocidad de gusano");
-            System.out.println("3. Remover tierra");
-            System.out.println("4. Despertar gusano");
-            System.out.println("5. Estado de Gusano");
-            System.out.println("6. Estado de Jardinero");
+            System.out.println("3. Ver estado actual (Monitor)");
+            System.out.println("4. Estado de Gusano");
+            System.out.println("5. Estado de Jardinero");
+            System.out.println("6. Despertar gusano");
             System.out.println("7. Salir");
             System.out.println("=====================");
-            menu = scanner.nextInt();
+            
+            if(scanner.hasNextInt()){
+                menu = scanner.nextInt();
+            } else {
+                scanner.next();
+                menu = 0;
+            }
 
             switch(menu) {
 
@@ -42,20 +47,19 @@ public class Main {
                     filas = scanner.nextInt();
                     System.out.print("Número de columnas: ");
                     columnas = scanner.nextInt();
-                    System.out.print("Mapa actualizado.");
+                    
                     mapa = new char[filas][columnas];
-
                     for(int r = 0; r < filas; r++) {
                         for(int c = 0; c < columnas; c++) {
                             mapa[r][c] = '.';
                         }
                     }
 
-                    // actualizar en cada hilo
                     gusano.actualizarMapa(mapa);
                     jardinero.actualizarMapa(mapa);
                     monitor.actualizarMapa(mapa);
-                    monitor.mostrarMapa();
+                    
+                    System.out.println("Mapa redimensionado correctamente.");
                     break;
 
                 case 2:
@@ -65,19 +69,19 @@ public class Main {
                     break;
 
                 case 3:
-                    if(gusano.getTerminar()) {
-                        jardinero.removerTierra();
-                        System.out.println("Tierra removida exitosamente.");
-                        monitor.mostrarMapa();
-                    } 
-                    else {
-                        System.out.println("El gusano aún no termina.");
-                        monitor.mostrarMapa();
-                    }
+                    monitor.mostrarMapa();
                     break;
 
                 case 4:
-                    if(jardinero.getTerminar()) {
+                    System.out.println("Estado de Gusano: " + gusano.getState());
+                    break;
+                    
+                case 5:
+                    System.out.println("Estado de Jardinero: " + jardinero.getState());
+                    break;
+                
+                case 6:
+                    if (jardinero.getState() == Thread.State.WAITING) {
                         gusano.despertar();
                         System.out.println("Gusano despertado con éxito.");
                         monitor.mostrarMapa();
@@ -87,22 +91,13 @@ public class Main {
                         monitor.mostrarMapa();
                     }
                     break;
-
-                case 5:
-                    System.out.println("Estado de Gusano: " + gusano.getState());
-                    monitor.mostrarMapa();
-                    break;
                     
-                case 6:
-                    System.out.println("Estado de Jardinero: " + jardinero.getState());
-                    monitor.mostrarMapa();
-                    break;
-                
                 case 7:
                     monitor.terminar();
                     gusano.finalizar();
                     jardinero.terminar();
-					scanner.close();
+                    scanner.close();
+                    System.out.println("Saliendo de la simulación...");
                     break;
 
                 default:

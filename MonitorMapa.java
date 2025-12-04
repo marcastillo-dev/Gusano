@@ -25,12 +25,12 @@ public class MonitorMapa extends Thread {
         int filas = mapa.length;
         int columnas = mapa[0].length;
 
-        System.out.println("========================");
+        System.out.println("======= MONITOR ========");
         for(int r = 0; r < filas; r++) {
             for(int c = 0; c < columnas; c++) {
                 System.out.printf("|%2c", mapa[r][c]);
             }
-            System.out.println();
+            System.out.println("|");
         }
         System.out.println("========================");
     }
@@ -40,7 +40,7 @@ public class MonitorMapa extends Thread {
             synchronized(this) {
                 try { wait(); } catch(Exception e) {}
             }
-            imprimir();
+            if(!terminar) imprimir();
         }
     }
 }
