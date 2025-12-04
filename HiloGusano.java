@@ -1,77 +1,95 @@
 public class HiloGusano extends Thread {
-
+    
     private char[][] jardin;
     private int filas;
     private int columnas;
-    private int velocidad = 1000;
-    private boolean terminar = false;
-    private boolean fin = false;
-
+    private int velocidad = 200; 
+    boolean terminar = false;
+    
     public HiloGusano(char[][] j) {
-        actualizarMapa(j);
+        this.jardin = j;
+        filas = jardin.length;
+        columnas = jardin[0].length;
     }
-
-    public synchronized void actualizarMapa(char[][] nuevo) {
-        this.jardin = nuevo;
-        filas = nuevo.length;
-        columnas = nuevo[0].length;
-    }
-
+    
     public void caminaRenglon(int r) {
         for(int x = 0; x < columnas; x++) {
-            jardin[r][x] = 'W';
+            jardin[r][x] = 'W'; 
         }
     }
-
+    
     public void caminaColumna(int c) {
         for(int x = 0; x < filas; x++) {
-            jardin[x][c] = 'W';
+            jardin[x][c] = 'W'; 
         }
     }
 
     public void setVelocidad(int v) {
         velocidad = v;
     }
-
-    public boolean getTerminar() {
-        return terminar;
+    
+    public void finalizar(){
+        this.terminar = true;
     }
     
-    public void finalizar() {
-        fin = true;
+    public void actualizarMapa(char[][] j){
+        this.jardin = j;
+        filas = jardin.length;
+        columnas = jardin[0].length;
     }
-
-    public void despertar() {
-        synchronized(jardin) {
-            jardin.notify();
+    //3er cambio
+    // para evitar un ciclo infinito
+    public void despertar(){
+        synchronized(jardin){// se agrega synchronized para eviatr una excepción
+        jardin.notify();
         }
     }
 
+    private void imprimirJardin() {
+        System.out.println("===  GUSANO AVANZANDO ===");
+        for(int r = 0; r < filas; r++) {
+            for(int c = 0; c < columnas; c++) {
+                System.out.printf("|%2c", jardin[r][c]);
+            }
+            System.out.println("|");
+        }
+        System.out.println("===========================");
+    }
+    
+    
     public void run() {
-        while(!fin) {
-            try {
-                synchronized(jardin) {
-    
-                    for (int r = 0; r < filas; r++) {
-                        caminaRenglon(r);
+        int i = 0;
+        int j = 0;
+        while(!terminar) {
+            try{
+                //1er cambio
+                // Solucionamos problema donde el jardinero no podia entrar a realizar su tarea
+                //Sacamos for de synchronized para que el jardinero puidera trabajar cuando le tocara 
+                for(i = 0; i < filas; i++) {
+                    for(j = 0; j < columnas; j++){
+                        caminaRenglon(j);
+                        imprimirJardin(); 
                         sleep(velocidad);
                     }
-    
-                    for (int c = 0; c < columnas; c++) {
-                        caminaColumna(c);
-                        sleep(velocidad);
-                    }
-    
-                    terminar = true;
-                    jardin.wait(); // espera al jardinero
+                    caminaColumna(i);
+                    imprimirJardin();
+                    sleep(velocidad);
                 }
-            } 
-            catch (InterruptedException a) {
-                System.out.println("Interrupción");
+                
+                // 2do cambio
+                //Agregamos notify para que el gusano avise al jardinero y el inicie su tarea
+                synchronized(jardin) {
+                    System.out.println("Gusano finalizo ¡AVISANDO AL JARDINERO!");
+                    jardin.notify(); // notifica al jardinero 
+                    jardin.wait();   // El gusano duerme
+                }
             }
-            catch (IllegalMonitorStateException e) {
-                System.out.println("Interrupción");
+            catch(InterruptedException e) {
+                System.out.println("Interrupción Gusano");
             }
-        }
+            catch(ArrayIndexOutOfBoundsException a) {
+                i = 0;
+            }
+        }     
     }
 }
